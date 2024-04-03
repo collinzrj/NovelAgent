@@ -34,5 +34,5 @@ python try_rag.py
 ```
 
 ## TODO
-[] improve the prompts
-[] make the agent act adaptively
+- [ ] improve the prompts
+- [ ] make the agent act adaptively
