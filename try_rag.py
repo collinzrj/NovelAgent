@@ -11,11 +11,7 @@ from langchain import hub
 from langchain_core.messages import HumanMessage
 
 
-# vectorstore = FAISS.from_texts(
-#     ["harrison works in Yixing"], embedding=OpenAIEmbeddings()
-# )
-# vectorstore.save_local("faiss_index")
-vectorstore = FAISS.load_local("guimi_embedding", OpenAIEmbeddings())
+vectorstore = FAISS.load_local("novel_embedding", OpenAIEmbeddings())
 
 retriever = vectorstore.as_retriever()
 
@@ -31,10 +27,12 @@ prompt = hub.pull("hwchase17/openai-tools-agent")
 llm = ChatOpenAI(model_name='gpt-4-turbo-preview')
 agent = create_openai_tools_agent(llm, tools, prompt)
 agent_executor = AgentExecutor(agent=agent, tools=tools)
+question = input("Please enter your question:")
 
 result = agent_executor.invoke({
-    "input": "小说设定中的历史是什么样的，请简述小说中历史发展过程"
+    "input": question
 })
 
 
+print("Final answer:")
 print(result)

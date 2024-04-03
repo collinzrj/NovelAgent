@@ -1,4 +1,5 @@
 from operator import itemgetter
+from langchain import hub
 from langchain_community.vectorstores import FAISS
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
@@ -7,15 +8,10 @@ from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain.agents import AgentExecutor, create_openai_functions_agent
 from langchain.tools.retriever import create_retriever_tool
 from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain import hub
 from langchain_core.messages import HumanMessage
 
 
-# vectorstore = FAISS.from_texts(
-#     ["harrison works in Yixing"], embedding=OpenAIEmbeddings()
-# )
-# vectorstore.save_local("faiss_index")
-vectorstore = FAISS.load_local("guimi_embedding", OpenAIEmbeddings())
+vectorstore = FAISS.load_local("novel_embedding", OpenAIEmbeddings())
 
 retriever = vectorstore.as_retriever()
 
@@ -28,7 +24,6 @@ tools = [tool]
 
 
 llm = ChatOpenAI(model_name='gpt-4-turbo-preview')
-# llm = ChatOpenAI()
 
 def first_round_retrieve(question):
     template = """You are an ai agent with access to a novel for which you can perform search on by retrieval augmented generation, 
@@ -42,7 +37,8 @@ def first_round_retrieve(question):
 
 
     llm_result = llm.invoke(prompt)
-    print(llm_result.content)
+    print("First round proposed queries:")
+    print(llm_result.content, '\n')
 
     pairs = ''
     for query in llm_result.content.split('\n'):
@@ -65,7 +61,7 @@ def refine_question(pairs, question):
     prompt = prompt.format_messages(doc=pairs, question=question)
 
     llm_result = llm.invoke(prompt)
-    print("New question:", llm_result.content)
+    print("Refined question:\n" + llm_result.content, '\n')
     return llm_result
 
 def second_round_retrieve(pairs, question):
@@ -84,7 +80,7 @@ def second_round_retrieve(pairs, question):
 
 
     llm_result = llm.invoke(prompt)
-    print(llm_result.content)
+    print('Refined queries:\n' + llm_result.content, '\n')
 
     pairs = ''
     for query in llm_result.content.split('\n'):
@@ -107,11 +103,12 @@ def answer_question_with_doc(pairs, question):
     prompt = ChatPromptTemplate.from_template(template2)
     prompt = prompt.format_messages(doc=pairs, question=question)
     llm_result = llm.invoke(prompt)
-    print(llm_result.content)
+    print('Final answer:\n' + llm_result.content, '\n')
 
 
 if __name__ == "__main__":
-    question = '请总结小说中所有隐秘组织'
+    question = input("Please enter your question:")
+    print("")
     pairs = first_round_retrieve(question)
     new_question = refine_question(pairs, question)
     pairs = second_round_retrieve(pairs, new_question)
