@@ -106,7 +106,40 @@ def answer_question_with_doc(pairs, question):
     print('Final answer:\n' + llm_result.content, '\n')
 
 
+def make_plan(pairs, question):
+    # print(pairs)
+    template2 = """You are an ai agent with access to a novel for which you can perform search on by retrieval augmented generation, 
+    and the user will ask you questions on the novels.
+    Now you have gathered severals queries and documents relevant to them listed below:
+    {doc}
+    Given this context, construct a step by step plan to answer the question. You will answer in Chinese. 
+    Question:
+    {question}
+    Plan:
+    """
+    prompt = ChatPromptTemplate.from_template(template2)
+    prompt = prompt.format_messages(doc=pairs, question=question)
+    llm_result = llm.invoke(prompt)
+    print('Plan:\n' + llm_result.content, '\n')
+    return llm_result
+
+
+
 if __name__ == "__main__":
+    print("""Example Questions:
+- 克莱恩和格尔曼斯帕罗是什么关系
+- 克莱恩和心理炼金会的矛盾是怎么产生的
+- 原初魔女为什么仇视女性魔女
+- 有哪几个序列会改变性别
+- 克莱恩和天尊是什么关系
+- 克莱恩的穿越是怎么一回事
+- 罗塞塔大帝遭遇了什么困难
+- 小说中出现了哪些穿越者
+- 远古太阳神和真实造物主是什么关系
+- 小说设定中的历史是什么样的，请简述小说中历史发展过程
+- 班西港发生了什么事情
+- 玫瑰学派和愚者教会有什么关系
+- 请总结小说中所有隐秘组织""")
     question = input("Please enter your question:")
     print("")
     pairs = first_round_retrieve(question)
